@@ -1,0 +1,28 @@
+---
+- hosts: all
+  user: "{{ cli_user }}"
+  sudo: true
+  vars:
+    project_root: /vagrant
+    application_root: '{{ project_root }}'
+    deploy_env: development
+    cli_user: vagrant
+    httpd_user: vagrant
+    httpd_group: vagrant
+    servername: dev.battleshiphp.nl
+  vars_files:
+    - vars/dev.yml
+  roles:
+    # Server
+    - server
+    - nginx
+    - php
+
+    # Dev
+    - xdebug
+    - composer
+    - vagrant_local
+
+    # App
+    - app
+    - cron

@@ -1,0 +1,24 @@
+---
+- name: Disable xdebug for running composer
+  sudo: true
+  command: phpdismod xdebug
+
+- name: Install project dependencies
+  sudo: false
+  command: composer install --prefer-dist --optimize-autoloader --no-interaction chdir="{{ application_root }}"
+
+- name: Enable xdebug after running composer
+  sudo: true
+  command: phpenmod xdebug
+
+- name: Apply database migrations
+  become: yes
+  become_user: "{{ httpd_user }}"
+  command: "vendor/bin/phinx migrate -e development"
+  args:
+    chdir: "{{ application_root }}"
+
+#- name: Run the Battheshiphp Daemon
+#  become: yes
+#  become_user: "{{ httpd_user }}"
+#  command: "run-one-constantly php {{ application_root }}/bin/battleship.php 192.168.56.82 1>> {{ application_root }}/logs/battleshiphp-daemon.log 2>&1"

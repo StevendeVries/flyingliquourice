@@ -1,0 +1,42 @@
+---
+- name: Add Nginx PPA
+  apt_repository: repo="ppa:nginx/stable" update_cache=yes
+
+- name: Install Nginx
+  sudo: yes
+  apt: pkg=nginx state=latest
+
+- name: Create SSL directory
+  file: dest=/etc/nginx/ssl state=directory
+  when: nginx.ssl | default(false)
+
+- name: Generate strong unique Diffie-Hellman group.
+  command: openssl dhparam -out dhparams.pem 2048
+  args:
+    chdir: /etc/nginx/ssl/
+    creates: /etc/nginx/ssl/dhparams.pem
+  when: nginx.ssl | default(false)
+
+- name: Generate self-signed SSL certificate
+  shell: >
+    openssl req -subj "/CN={{ servername }}" -new
+    -newkey rsa:2048 -days 3650 -nodes -x509 -sha256
+    -keyout {{ servername }}_self_signed.key -out {{ servername }}_self_signed.pem
+  args:
+    chdir: /etc/nginx/ssl/
+  when: nginx.ssl | default(false)
+
+- name: Copy ssl configuration
+  sudo: yes
+  copy: src=ssl.conf dest=/etc/nginx/ssl.conf
+  when: nginx.ssl | default(false)
+
+- name: Copy ssl-stapling configuration
+  sudo: yes
+  copy: src=ssl-stapling.conf dest=/etc/nginx/ssl-stapling.conf
+  when: nginx.ssl | default(false)
+
+- name: Change default nginx site
+  sudo: yes
+  template: src=default.tpl dest=/etc/nginx/sites-available/default
+  notify: restart nginx

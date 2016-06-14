@@ -4,11 +4,10 @@
 namespace Wecamp\FlyingLiqourice\Domain\Game;
 
 use Assert\Assertion;
-use Wecamp\FlyingLiqourice\Domain\Coords;
 
 class Ship
 {
-    const MINIMUM_SIZE = 1;
+    const MINIMUM_SIZE = 2;
 
     /**
      * @var Coords
@@ -35,8 +34,8 @@ class Ship
         Assertion::lessOrEqualThan($hits, $size);
 
         $this->startPoint = $startPoint;
-        $this->endPoint = $endPoint;
-        $this->hits = $hits;
+        $this->endPoint   = $endPoint;
+        $this->hits       = $hits;
     }
 
     /**
@@ -86,7 +85,7 @@ class Ship
     {
         $size = $this->startPoint->distance($this->endPoint) + 1;
 
-        return ($this->hits === $size);
+        return ($this->hits >= $size);
     }
 
     /**
@@ -103,5 +102,28 @@ class Ship
     public function endPoint()
     {
         return $this->endPoint;
+    }
+
+    /**
+     * @param Coords $coords
+     * @return bool
+     */
+    public function on(Coords $coords)
+    {
+        if ($coords->x() == $this->startPoint->x()
+            && $coords->y() >= $this->startPoint->y()
+            && $coords->y() <= $this->endPoint->y()
+        ) {
+            return true;
+        }
+
+        if ($coords->y() == $this->startPoint->y()
+            && $coords->x() >= $this->startPoint->x()
+            && $coords->x() <= $this->endPoint->x()
+        ) {
+            return true;
+        }
+
+        return false;
     }
 }

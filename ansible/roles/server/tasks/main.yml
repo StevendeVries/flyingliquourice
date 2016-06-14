@@ -1,0 +1,41 @@
+---
+- name: Make sure project root exists
+  sudo: true
+  file: dest={{ project_root }} state=directory recurse=yes
+
+- name: Update apt
+  sudo: yes
+  apt: update_cache=yes
+
+- name: Install System Packages
+  sudo: yes
+  apt: pkg={{ item }} state=latest
+  with_items:
+    - curl
+    - wget
+    - python-software-properties
+    - apt-transport-https
+    - ntp
+
+- name: Install Extra Packages
+  sudo: yes
+  apt: pkg={{ item }} state=latest
+  with_items: "{{server.packages}}"
+  when: server.packages is defined
+
+- name: Configure the timezone
+  sudo: yes
+  template: src=timezone.tpl dest=/etc/timezone
+
+- name: More Configure the timezone
+  sudo: yes
+  file: src=/usr/share/zoneinfo/{{server.timezone}} dest=/etc/localtime state=link force=yes backup=yes
+
+- name: Set default system language pack
+  shell: locale-gen {{server.locale}}
+  sudo: yes
+
+- name: Build hosts file
+  lineinfile: dest=/etc/hosts regexp='.*{{ item }}$' line="{{ hostvars[item].ansible_default_ipv4.address }} {{ item }}" state=present
+  when: hostvars[item].ansible_default_ipv4.address is defined
+  with_items: "{{play_hosts}}"

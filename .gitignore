@@ -1,4 +1,21 @@
+.vagrant/
+.idea/
 /vendor/
 /data/
 !data/.gitkeep
+!data/ships.php
 humbuglog.txt
+phpunit.xml
+
+# Cache and logs
+/var/cache/*
+/var/logs/*
+!var/cache/.gitkeep
+!var/logs/.gitkeep
+
+# Managed by Composer
+/vendor/
+
+# Composer PHAR
+/composer.phar
+/.tscache

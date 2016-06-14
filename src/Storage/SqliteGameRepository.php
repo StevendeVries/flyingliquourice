@@ -33,6 +33,13 @@ final class SqliteGameRepository implements DomainGameRepository
                 ':data' => json_encode($game->toArray())
             ]
         );
+        $stmt = $this->pdo->prepare('UPDATE games SET data = :data WHERE id = :id');
+        $stmt->execute(
+            [
+                ':id' => (string) $game->id(),
+                ':data' => json_encode($game->toArray())
+            ]
+        );
     }
 
     /**
@@ -43,16 +50,15 @@ final class SqliteGameRepository implements DomainGameRepository
     {
         $stmt = $this->pdo->prepare('SELECT data FROM games WHERE id = :id');
         $stmt->execute([':id' => (string) $identifier]);
-        if ($stmt->rowCount() == 0) {
-            throw new \InvalidArgumentException('No game found with that identifier.');
+        if (($column = $stmt->fetchColumn()) == null) {
+            throw new \InvalidArgumentException('No game found with that identifier. [' . ((string) $identifier) . ']');
         }
 
         return Game::fromArray(
             json_decode(
-                $stmt->fetchColumn(),
+                $column,
                 true
             )
         );
     }
-
 }

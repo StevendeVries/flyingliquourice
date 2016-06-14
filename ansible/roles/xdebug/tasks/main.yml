@@ -1,0 +1,12 @@
+---
+- name: Install xDebug
+  sudo: yes
+  apt: pkg=php-xdebug state=latest
+
+- name: Apply xDebug settings
+  sudo: yes
+  lineinfile: dest=/etc/php/7.0/fpm/conf.d/20-xdebug.ini
+              regexp='^;?{{ item.key }}'
+              line='{{ item.key }}={{ item.value }}'
+  notify: restart php7.0-fpm
+  with_dict: "{{ xdebug_settings | default({}) }}"

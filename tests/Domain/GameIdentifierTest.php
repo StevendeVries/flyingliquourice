@@ -50,8 +50,8 @@ final class GameIdentifierTest extends \PHPUnit_Framework_TestCase
      */
     public function it_can_be_compared_with_another_id()
     {
-        $anId = GameIdentifier::fromString('de305d54-75b4-431b-adb2-eb6b9e546014');
-        $anotherId = GameIdentifier::fromString('de305d54-75b4-431b-adb2-eb6b9e546014');
+        $anId         = GameIdentifier::fromString('de305d54-75b4-431b-adb2-eb6b9e546014');
+        $anotherId    = GameIdentifier::fromString('de305d54-75b4-431b-adb2-eb6b9e546014');
         $yetAnotherId = GameIdentifier::fromString('00000000-0000-0000-0000-000000000000');
 
         $this->assertTrue($anId->equals($anId));

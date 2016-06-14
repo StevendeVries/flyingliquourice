@@ -3,7 +3,6 @@
 namespace Wecamp\FlyingLiqourice\Domain\Game;
 
 use Assert\Assertion;
-use Wecamp\FlyingLiqourice\Domain\Coords;
 
 class Field
 {
@@ -13,34 +12,31 @@ class Field
     private $coords;
 
     /**
+     * @var boolean
+     */
+    private $shot;
+
+    /**
      * @var Ship
      */
     private $ship;
 
-    /**
-     * @var boolean
-     */
-    private $hit;
-
-    private function __construct(Coords $coords, Ship $ship = null, $hit = false)
+    private function __construct(Coords $coords, $shot = false)
     {
-        Assertion::boolean($hit);
+        Assertion::boolean($shot);
 
         $this->coords = $coords;
-        $this->ship = $ship;
-        $this->hit = $hit;
+        $this->shot   = $shot;
     }
 
     /**
      * @param int $x
      * @param int $y
-     * @param Ship|null $ship
-     * @param bool $hit
      * @return static
      */
-    public static function generate($x, $y, Ship $ship = null, $hit = false)
+    public static function generate($x, $y)
     {
-        return new static(Coords::create($x, $y), $ship, $hit);
+        return new static(Coords::create($x, $y));
     }
 
     /**
@@ -51,8 +47,7 @@ class Field
     {
         return new static(
             Coords::fromArray($field['coords']),
-            Ship::fromArray($field['ship']),
-            $field['hit']
+            $field['shot']
         );
     }
 
@@ -63,8 +58,7 @@ class Field
     {
         return [
             'coords' => $this->coords->toArray(),
-            'ship' => $this->ship->toArray(),
-            'hit' => $this->hit
+            'shot' => $this->shot
         ];
     }
 
@@ -85,16 +79,32 @@ class Field
         return $this->coords->equals($coords);
     }
 
-    public function hit()
+    public function shoot()
     {
-        if ($this->hit) {
-            throw new FieldAlreadyBeenHitException();
+        if ($this->shot) {
+            throw new FieldAlreadyBeenShotException();
         }
 
-        $this->hit = true;
+        $this->shot = true;
         if ($this->occupied()) {
             $this->ship->hit();
         }
+    }
+
+    /**
+     * @return bool
+     */
+    public function hit()
+    {
+        return $this->occupied() && $this->shot;
+    }
+
+    /**
+     * @return bool
+     */
+    public function miss()
+    {
+        return !$this->occupied() && $this->shot;
     }
 
     /**
@@ -127,5 +137,62 @@ class Field
         }
 
         return $this->ship->endPoint();
+    }
+
+    /**
+     * @return Coords
+     */
+    public function coords()
+    {
+        return $this->coords;
+    }
+
+    /**
+     * @param Ship $ship
+     */
+    public function place(Ship $ship)
+    {
+        $this->ship = $ship;
+    }
+
+    public function __toString()
+    {
+        if ($this->hasSunkenShip()) {
+            return '🔥 ';
+        }
+
+        if ($this->hit()) {
+            return '💣 ';
+        }
+
+        if ($this->miss()) {
+            return '💦 ';
+        }
+
+        if ($this->occupied() && $this->ship->startPoint()->equals($this->coords())) {
+            if ($this->ship->startPoint()->x() == $this->ship->endPoint()->x()) {
+                return '^ ';
+            }
+
+            return '< ';
+        }
+
+        if ($this->occupied() && $this->ship->endPoint()->equals($this->coords())) {
+            if ($this->ship->startPoint()->x() == $this->ship->endPoint()->x()) {
+                return 'v ';
+            }
+
+            return '> ';
+        }
+
+        if ($this->occupied()) {
+            if ($this->ship->startPoint()->x() == $this->ship->endPoint()->x()) {
+                return 'ǁ ';
+            }
+
+            return '= ';
+        }
+
+        return '  ';
     }
 }

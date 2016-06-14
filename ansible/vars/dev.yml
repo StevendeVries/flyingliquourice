@@ -1,0 +1,22 @@
+---
+server:
+    install: '1'
+    packages: [vim, htop, git]
+    timezone: UTC
+    locale: en_GB.UTF-8
+vagrant_local:
+    install: '1'
+    vm: { base_box: trusty64, hostname: dev.battleshiphp.nl, ip: 192.168.56.82, memory: '512', sharedfolder: ./, syncType: nfs }
+nginx:
+    install: '1'
+    docroot: '{{ application_root }}/public'
+    servername: '{{ servername }} www.{{ servername }}'
+    ssl: true
+php:
+    install: '1'
+    ppa: php
+    packages: [php7.0-cli, php7.0-intl, php7.0-common, php7.0-curl, php7.0-mysql, php7.0-gd, php7.0-mcrypt, php7.0-mbstring, php7.0-dom, php7.0-sqlite3]
+composer:
+    install: '1'
+xdebug:
+    install: '1'

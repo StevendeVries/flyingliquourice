@@ -20,7 +20,7 @@ final class SqliteGameRepositoryTest extends \PHPUnit_Framework_TestCase
 
     public function setUp()
     {
-        $this->pdo = $this->getMock(MockPDO::class, ['prepare']);
+        $this->pdo        = $this->getMock(MockPDO::class, ['prepare']);
         $this->repository = new SqliteGameRepository($this->pdo);
     }
 
@@ -35,12 +35,12 @@ final class SqliteGameRepositoryTest extends \PHPUnit_Framework_TestCase
             ->setMethods(['execute'])
             ->getMock();
 
-        $this->pdo->expects($this->once())
+        $this->pdo->expects($this->at(0))
             ->method('prepare')
             ->with($this->equalTo('INSERT INTO games (id, data) VALUES (:id, :data)'))
             ->willReturn($stmt);
 
-        $stmt->expects($this->once())
+        $stmt->expects($this->any())
             ->method('execute')
             ->with(
                 $this->equalTo(
@@ -51,6 +51,11 @@ final class SqliteGameRepositoryTest extends \PHPUnit_Framework_TestCase
                 )
             );
 
+        $this->pdo->expects($this->at(1))
+            ->method('prepare')
+            ->with($this->equalTo('UPDATE games SET data = :data WHERE id = :id'))
+            ->willReturn($stmt);
+
         $this->repository->save($game);
     }
 
@@ -59,7 +64,7 @@ final class SqliteGameRepositoryTest extends \PHPUnit_Framework_TestCase
      */
     public function it_should_get_a_game()
     {
-        $game = Game::create();
+        $game       = Game::create();
         $identifier = $game->id();
 
         $stmt = $this->getMockBuilder('stdClass')
@@ -81,9 +86,9 @@ final class SqliteGameRepositoryTest extends \PHPUnit_Framework_TestCase
                 )
             );
 
-        $stmt->expects($this->once())
-            ->method('rowCount')
-            ->willReturn(1);
+        //        $stmt->expects($this->once())
+        //            ->method('rowCount')
+        //            ->willReturn(1);
 
         $stmt->expects($this->once())
             ->method('fetchColumn')
@@ -100,5 +105,6 @@ final class SqliteGameRepositoryTest extends \PHPUnit_Framework_TestCase
 class MockPDO extends \PDO
 {
     public function __construct()
-    {}
+    {
+    }
 }

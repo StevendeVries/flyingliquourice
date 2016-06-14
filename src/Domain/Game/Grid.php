@@ -1,15 +1,12 @@
 <?php
 
-namespace Wecamp\FlyingLiqourice\Domain;
+namespace Wecamp\FlyingLiqourice\Domain\Game;
 
 use Assert\Assertion;
-use Wecamp\FlyingLiqourice\Domain\Game\CoordsNotInGridException;
-use Wecamp\FlyingLiqourice\Domain\Game\Field;
-use Wecamp\FlyingLiqourice\Domain\Game\Fields;
 
 class Grid
 {
-    const DEFAULT_WIDTH = 10;
+    const DEFAULT_WIDTH  = 10;
     const DEFAULT_HEIGHT = 10;
 
     /**
@@ -28,7 +25,7 @@ class Grid
     private $height;
 
     /**
-     * @var Fields|Field[]
+     * @var Fields
      */
     private $fields;
 
@@ -37,7 +34,7 @@ class Grid
         Assertion::integer($width);
         Assertion::integer($height);
 
-        $this->width = $width;
+        $this->width  = $width;
         $this->height = $height;
         $this->fields = $fields;
     }
@@ -52,14 +49,24 @@ class Grid
     }
 
     /**
+     * @param int $width
+     * @param int $height
+     * @param array $shipSizes
      * @return static
      */
-    public static function generate()
-    {
+    public static function generate(
+        $width = null,
+        $height = null,
+        array $shipSizes = null
+    ) {
         return new static(
-            static::DEFAULT_WIDTH,
-            static::DEFAULT_HEIGHT,
-            Fields::generate(static::DEFAULT_WIDTH, static::DEFAULT_HEIGHT, static::$defaultShipSizes)
+            ($width === null) ? static::DEFAULT_WIDTH : $width,
+            ($height === null) ? static::DEFAULT_HEIGHT : $height,
+            FieldsGenerator::generate(
+                ($width === null) ? static::DEFAULT_WIDTH : $width,
+                ($height === null) ? static::DEFAULT_HEIGHT : $height,
+                ($shipSizes === null) ? static::$defaultShipSizes : $shipSizes
+            )
         );
     }
 
@@ -81,13 +88,13 @@ class Grid
     {
         $x = $coords->x();
 
-        if ($x < 0 || $x > $this->width) {
+        if ($x < 0 || $x >= $this->width) {
             return false;
         }
 
         $y = $coords->y();
 
-        if ($y < 0 || $y > $this->height) {
+        if ($y < 0 || $y >= $this->height) {
             return false;
         }
 
@@ -102,7 +109,8 @@ class Grid
     {
         $this->ensureCoordsInGrid($coords);
 
-        foreach($this->fields as $field) {
+        /** @var Field $field */
+        foreach ($this->fields as $field) {
             if ($field->at($coords) && $field->occupied()) {
                 return true;
             }
@@ -113,11 +121,11 @@ class Grid
     /**
      * @param Coords $coords
      */
-    public function hitAt(Coords $coords)
+    public function shoot(Coords $coords)
     {
         $this->ensureCoordsInGrid($coords);
 
-        $this->fields->hit($coords);
+        $this->fields->shoot($coords);
     }
 
     /**
@@ -154,6 +162,14 @@ class Grid
     }
 
     /**
+     * @return string
+     */
+    public function __toString()
+    {
+        return (string) $this->fields;
+    }
+
+    /**
      * @param Coords $coords
      */
     private function ensureCoordsInGrid(Coords $coords)
@@ -161,5 +177,21 @@ class Grid
         if (!$this->has($coords)) {
             throw new CoordsNotInGridException();
         }
+    }
+
+    /**
+     * @return bool
+     */
+    public function didAllShipsSink()
+    {
+        return $this->fields->didAllShipsSink();
+    }
+
+    /**
+     * @return Ship[]
+     */
+    public function ships()
+    {
+        return $this->fields->ships();
     }
 }
