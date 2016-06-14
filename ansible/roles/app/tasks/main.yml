@@ -1,15 +1,15 @@
 ---
-- name: Disable xdebug for running composer
-  sudo: true
-  command: phpdismod xdebug
+#- name: Disable xdebug for running composer
+#  sudo: true
+#  command: phpdismod xdebug
 
 - name: Install project dependencies
   sudo: false
   command: composer install --prefer-dist --optimize-autoloader --no-interaction chdir="{{ application_root }}"
 
-- name: Enable xdebug after running composer
-  sudo: true
-  command: phpenmod xdebug
+#- name: Enable xdebug after running composer
+#  sudo: true
+#  command: phpenmod xdebug
 
 - name: Apply database migrations
   become: yes

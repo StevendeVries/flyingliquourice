@@ -1,0 +1,33 @@
+---
+- name: Remove existing release folder
+  file: path="{{ application_root }}" state=absent
+
+- name: Create new root dir at server
+  file: path="{{ application_root }}" state=directory
+
+- name: Extract archive to new root dir at server
+  unarchive: src="{{ local_archive_path }}" dest="{{ application_root }}"
+
+- name: Set ownership to deploy user
+  file: path={{ application_root }} state=directory owner=root group=root recurse=yes
+  become: true
+
+- name: Fix file rights on application files
+  command: find {{ application_root }} -type f -exec chmod 644 {} \;
+  become: true
+
+- name: Fix directory on application folder
+  command: find {{ application_root }} -type d -exec chmod 755 {} \;
+  become: true
+
+- name: Fix file rights on executable application files
+  command: find {{ application_root }}/bin ! \( -type d \) -exec chmod +x {} \;
+  become: true
+
+- name: Create symlink to new deploy
+  file:
+    path: "{{ project_root }}/current"
+    src: "{{ application_root }}"
+    force: yes
+    state: link
+

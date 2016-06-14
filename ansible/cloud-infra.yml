@@ -1,0 +1,16 @@
+---
+- hosts: all
+  user: "root"
+  become: true
+  vars:
+      httpd_user: battleship
+      httpd_group: battleship
+      project_root: /srv/battle.stevendevries.nl
+      servername: battle.stevendevries.nl
+  vars_files:
+      - vars/cloud.yml
+  roles:
+    - server
+    - nginx
+    - php
+    - composer

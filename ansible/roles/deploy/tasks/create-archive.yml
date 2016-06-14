@@ -1,0 +1,42 @@
+---
+- name: Set git clone facts
+  set_fact:
+    local_git_clone_dir: "/tmp/{{ project_name }}-{{ commit_hash }}"
+
+- name: Remove clone dir
+  file: path="{{ local_git_clone_dir }}" state=absent
+
+- name: Create git clone of this project
+  git:
+    repo: "{{ inventory_dir }}/../../"
+    dest: "{{ local_git_clone_dir }}"
+    version: "{{ commit_hash }}"
+
+- name: Install Composer
+  get_url: url=https://getcomposer.org/composer.phar dest="{{ local_git_clone_dir }}" mode=0555
+
+- name: Install project dependencies
+  command: >
+    php composer.phar install \
+    --optimize-autoloader \
+    --prefer-dist \
+    --no-scripts \
+    --no-dev \
+    --ignore-platform-reqs \
+    --no-progress \
+    --no-interaction
+  args:
+    chdir: "{{ local_git_clone_dir }}"
+
+- name: Set archive name
+  set_fact:
+    archive_name: "{{ project_name }}-{{ commit_hash }}.tar.gz"
+
+- name: Set local archive path
+  set_fact:
+    local_archive_path: "/tmp/{{ archive_name }}"
+
+- name: Add files to archive
+  command: tar -czf {{ local_archive_path }} bin data src migrations public vendor composer.phar composer.json composer.lock phinx.yml
+  args:
+    chdir: "{{ local_git_clone_dir }}"

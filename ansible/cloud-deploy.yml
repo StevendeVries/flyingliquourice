@@ -1,0 +1,14 @@
+---
+- hosts: all
+  user: "root"
+  become: true
+  vars:
+      httpd_user: root
+      project_name: battleshiphp
+      project_root: /srv/battle.stevendevries.nl
+      application_root: '{{ project_root }}/releases/release-{{ commit_hash }}'
+  roles:
+    # App
+    - deploy
+    - app
+    - cron

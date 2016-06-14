@@ -1,0 +1,17 @@
+---
+server:
+    install: '1'
+    packages: [vim, htop, git]
+    timezone: UTC
+    locale: en_GB.UTF-8
+nginx:
+    install: '1'
+    docroot: '{{ project_root }}/current/public'
+    servername: '{{ servername }} www.{{ servername }}'
+    ssl: true
+php:
+    install: '1'
+    ppa: php
+    packages: [php7.0-cli, php7.0-intl, php7.0-common, php7.0-curl, php7.0-mysql, php7.0-gd, php7.0-mcrypt, php7.0-mbstring, php7.0-dom, php7.0-sqlite3]
+composer:
+    install: '1'
