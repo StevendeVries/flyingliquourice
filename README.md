@@ -44,3 +44,7 @@ Command | Description
 `SURRENDER` | Give up the game and lose
 
 **Honourable mention to our WeCamp coach: [Eli White](https://twitter.com/EliW)**
+
+## Deployment
+
+Make sure you change the ansible/inventories/prod-host with the proper ip and make sure you have ssh access
